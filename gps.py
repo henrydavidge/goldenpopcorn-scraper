@@ -13,6 +13,8 @@ import os
 gp_url = 'http://passthepopcorn.me/torrents.php?\
 		action=advanced&grouping=0&scene=2&order_by=gptime'
 
+bytes_per_gb = 1024*1024*1024
+
 # Load configuration
 cfg = yaml.load(open('config.yaml'))
 ck = cl.Cookie(version=0, 
@@ -47,12 +49,14 @@ br.add_cookie({
 
 # h/t http://stackoverflow.com/a/1392549/3447412
 def getSize(start_path = '.'):
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(start_path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size
+	total_size = 0
+	for dirpath, dirnames, filenames in os.walk(start_path):
+		for f in filenames:
+			fp = os.path.join(dirpath, f)
+			try:
+				total_size += os.path.getsize(fp)
+			except: pass
+	return total_size
 
 def downloadGPs():
 	br.get(gp_url)
@@ -66,10 +70,10 @@ def downloadGPs():
 			year = m.find_previous(class_='basic-movie-list__movie__year').get_text()
 			target = m.find('a', title='Download').get('href')
 			f = opener.open('http://passthepopcorn.me/' + target)
-			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent', 'wb') as local:
+			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent', 'wb')) as local:
 				local.write(f.read())
 		else: 
 			break
 
-if getSize(start_path=cfg['storage_root']) < cfg['max_size']:
+if getSize(start_path=cfg['storage_root']) / bytes_per_gb < cfg['max_size']:
 	downloadGPs()
