@@ -77,3 +77,5 @@ def downloadGPs():
 
 if getSize(start_path=cfg['storage_root']) / bytes_per_gb < cfg['max_size']:
 	downloadGPs()
+else:
+	print "Not enough space on disk!"
