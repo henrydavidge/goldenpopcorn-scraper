@@ -58,26 +58,39 @@ def getSize(start_path = '.'):
 			except: pass
 	return total_size
 
-def downloadGPs():
+def downloadGPs(size):
+	print size
 	br.get(gp_url)
 	soup = BeautifulSoup(br.page_source)
 	movies = soup.find_all('tr', class_='group_torrent')
 	for m in movies: 
 		t = m.find('span', class_='time').get('title')
 		created = time.strptime(t, '%b %d %Y, %H:%M')
-		if (time.time() - calendar.timegm(created)) / 60 < cfg['interval']:
+
+		if size > cfg['max_size']:
+			print 'Not enough space on disk!'
+			print size
+			return
+		elif (time.time() - calendar.timegm(created)) / 60 < cfg['interval']:
+			# No new GP
+			return
+		else:
 			title = m.find_previous(class_='basic-movie-list__movie__title').get_text().replace(' ', '-')
 			year = m.find_previous(class_='basic-movie-list__movie__year').get_text()
+			torrent_size = m.find_all(class_='nobr')[1].get_text() # Ugly, but this is where to find the size
+			print torrent_size
+			if 'GiB' in torrent_size:
+				size += float(torrent_size.split()[0])
+			else: # It's in megabytes
+				size += float(torrent_size.split()[0]) / 1024 
 			target = m.find('a', title='Download').get('href')
 			f = opener.open('http://passthepopcorn.me/' + target)
-			print 'Downloading {}'.format(title.replace('-', ' ') + ' ' + year)
+			try:
+				print 'Downloading {}'.format(title.replace('-', ' ') + ' ' + year)
+			except:
+				print 'Downloading something with unicode in the title'
 			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent'), 'wb+') as local:
 				local.write(f.read())
-		else: 
-			break
 
-if getSize(start_path=cfg['storage_root']) / bytes_per_gb < cfg['max_size']:
-	downloadGPs()
-else:
-	print 'Not enough space on disk!'
+downloadGPs(getSize(start_path=cfg['storage_root']) / bytes_per_gb)
 br.quit()
