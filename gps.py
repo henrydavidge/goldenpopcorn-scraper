@@ -7,6 +7,7 @@ import re
 import time
 import datetime
 import calendar
+import os
 
 # Some constants
 gp_url = 'http://passthepopcorn.me/torrents.php?\
@@ -44,6 +45,15 @@ br.add_cookie({
 	'domain': 'passthepopcorn.me'
 	})
 
+# h/t http://stackoverflow.com/a/1392549/3447412
+def getSize(start_path = '.'):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+    return total_size
+
 def downloadGPs():
 	br.get(gp_url)
 	soup = BeautifulSoup(br.page_source)
@@ -56,9 +66,10 @@ def downloadGPs():
 			year = m.find_previous(class_='basic-movie-list__movie__year').get_text()
 			target = m.find('a', title='Download').get('href')
 			f = opener.open('http://passthepopcorn.me/' + target)
-			with open(title + '-' + year + '.torrent', 'wb') as local:
+			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent', 'wb') as local:
 				local.write(f.read())
 		else: 
 			break
 
-downloadGPs()
+if getSize(start_path=cfg['storage_root']) < cfg['max_size']:
+	downloadGPs()
