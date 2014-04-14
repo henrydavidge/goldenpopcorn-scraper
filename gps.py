@@ -70,6 +70,7 @@ def downloadGPs():
 			year = m.find_previous(class_='basic-movie-list__movie__year').get_text()
 			target = m.find('a', title='Download').get('href')
 			f = opener.open('http://passthepopcorn.me/' + target)
+			print 'Downloading {}'.format(title)
 			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent', 'wb')) as local:
 				local.write(f.read())
 		else: 
@@ -78,4 +79,4 @@ def downloadGPs():
 if getSize(start_path=cfg['storage_root']) / bytes_per_gb < cfg['max_size']:
 	downloadGPs()
 else:
-	print "Not enough space on disk!"
+	print 'Not enough space on disk!'
