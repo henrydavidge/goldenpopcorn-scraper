@@ -71,7 +71,7 @@ def downloadGPs():
 			target = m.find('a', title='Download').get('href')
 			f = opener.open('http://passthepopcorn.me/' + target)
 			print 'Downloading {}'.format(title.replace('-', ' ') + ' ' + year)
-			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent', 'wb+')) as local:
+			with open(os.path.join(cfg['watch_folder'], title + '-' + year + '.torrent'), 'wb+') as local:
 				local.write(f.read())
 		else: 
 			break
