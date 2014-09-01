@@ -1,0 +1,5 @@
+storage_root:
+max_size: # in GB
+watch_folder:
+interval: # in minutes
+cookie:
